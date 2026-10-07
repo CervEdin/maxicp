@@ -123,10 +123,10 @@ class NoOverlapBCGlobal extends AbstractCPConstraint {
     public void propagate() {
         // left to right
         update();
-        // set lct of optional to + infinity
+        // set lct of optional to + infinity, so that they never restrict the other activities
         for (int i = 0; i < n; i++) {
             if (isOptional[i]) {
-                endMax[i] = 1000000;
+                endMax[i] = Integer.MAX_VALUE;
             }
         }
         NoOverlapBCLeftToRight.Outcome oc = globalFilter.filter(startMin, duration, endMax, n);
@@ -154,7 +154,7 @@ class NoOverlapBCGlobal extends AbstractCPConstraint {
         for (int i = 0; i < n; i++) {
             int startMinOld = startMin[i];
             startMin[i] = -endMax[i];
-            endMax[i] = isOptional[i] ? 1000000 : -startMinOld;
+            endMax[i] = isOptional[i] ? Integer.MAX_VALUE : -startMinOld;
         }
         oc = globalFilter.filter(startMin, duration, endMax, n);
         if (oc == NoOverlapBCLeftToRight.Outcome.INCONSISTENCY) {
