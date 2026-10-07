@@ -223,4 +223,26 @@ class NonOverlapOptionalTest {
         }
         assertDoesNotThrow(() -> cp.post(filter.make.apply(intervals)));
     }
+
+    /**
+     * An optional interval must not restrict the other ones, even late in the horizon.
+     */
+    @ParameterizedTest
+    @EnumSource(Filter.class)
+    public void testOptionalDoesNotRestrictLateIntervals(Filter filter) {
+        CPSolver cp = makeSolver();
+        CPIntervalVar present = makeIntervalVar(cp, false, 10);
+        present.setStartMin(999_995);
+        CPIntervalVar optional = makeIntervalVar(cp, true, 10);
+        optional.setStartMin(999_990);
+        cp.post(filter.make.apply(new CPIntervalVar[]{present, optional}));
+        assertEquals(999_995, present.startMin());
+        assertTrue(optional.isOptional());
+    }
+
+    @ParameterizedTest
+    @EnumSource(Filter.class)
+    public void testSameSolutionsAsDecompositionRandomLate(Filter filter) {
+        assertSameSolutions(filter, 44, 300, 5, 10, 12, 999_990);
+    }
 }
