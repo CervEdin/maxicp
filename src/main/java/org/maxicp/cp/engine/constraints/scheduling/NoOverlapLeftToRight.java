@@ -60,6 +60,7 @@ public class NoOverlapLeftToRight {
      * If a change is detected, the time windows of the instance variables (startMin and endMax) are reduced.
      */
     public Outcome filter(int[] startMin, int[] duration, int[] endMax, int n) {
+        if (n == 0) return Outcome.NO_CHANGE;
         update(startMin, duration, endMax, n);
         return fixPoint();
     }
