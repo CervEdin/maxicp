@@ -212,4 +212,15 @@ class NonOverlapOptionalTest {
     public void testSameSolutionsAsDecompositionRandomLarge(Filter filter) {
         assertSameSolutions(filter, 43, 30, 8, 6, 25, 0);
     }
+
+    @ParameterizedTest
+    @EnumSource(Filter.class)
+    public void testAllAbsent(Filter filter) {
+        CPSolver cp = makeSolver();
+        CPIntervalVar[] intervals = new CPIntervalVar[]{makeIntervalVar(cp, 1), makeIntervalVar(cp, 1)};
+        for (CPIntervalVar interval : intervals) {
+            interval.setAbsent();
+        }
+        assertDoesNotThrow(() -> cp.post(filter.make.apply(intervals)));
+    }
 }
