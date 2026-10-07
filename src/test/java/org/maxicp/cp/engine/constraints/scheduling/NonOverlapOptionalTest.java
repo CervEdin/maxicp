@@ -212,4 +212,38 @@ class NonOverlapOptionalTest {
     public void testSameSolutionsAsDecompositionRandomLarge(Filter filter) {
         assertSameSolutions(filter, 43, 30, 8, 6, 25, 0);
     }
+
+    /**
+     * An optional interval whose start is pushed after its end max must become absent.
+     */
+    @ParameterizedTest
+    @EnumSource(Filter.class)
+    public void testOptionalPushedPastItsEndIsRemoved(Filter filter) {
+        CPSolver cp = makeSolver();
+        CPIntervalVar present = makeIntervalVar(cp, false, 10);
+        present.setStart(0);
+        CPIntervalVar optional = makeIntervalVar(cp, true, 5);
+        optional.setEndMax(9);
+        cp.post(filter.make.apply(new CPIntervalVar[]{present, optional}));
+        assertTrue(optional.isAbsent());
+    }
+
+    /**
+     * Two present intervals and an optional one, all of length 20: only two of them fit in [0, 50).
+     */
+    @ParameterizedTest
+    @EnumSource(Filter.class)
+    public void testOptionalThatCannotFitIsRemoved(Filter filter) {
+        for (int optionalEndMax : new int[]{49, 50}) {
+            CPSolver cp = makeSolver();
+            CPIntervalVar[] intervals = new CPIntervalVar[3];
+            for (int i = 0; i < 3; i++) {
+                intervals[i] = makeIntervalVar(cp, i == 2, 20);
+                intervals[i].setEndMax(50);
+            }
+            intervals[2].setEndMax(optionalEndMax);
+            cp.post(filter.make.apply(intervals));
+            assertTrue(intervals[2].isAbsent(), "optional interval with end max " + optionalEndMax);
+        }
+    }
 }
