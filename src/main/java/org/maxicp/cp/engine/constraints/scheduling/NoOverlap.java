@@ -212,16 +212,12 @@ class NoOverlapGlobal extends AbstractCPConstraint {
             throw InconsistencyException.INCONSISTENCY;
         } else if (oc == NoOverlapLeftToRight.Outcome.CHANGE) {
             // update startMin and endMax bounds
+            // the bounds of an optional interval hold if it is present, it becomes absent if it no longer fits
             for (int i = 0; i < n; i++) {
                 CPIntervalVar interval = intervals[iterator[i]];
-                if (isOptional[i]) {
-                    if (startMin[i] > interval.endMax()) {
-                        interval.setAbsent();
-                        activities.remove(iterator[i]);
-                    }
-                } else {
-                    intervals[iterator[i]].setStartMin(globalFilter.startMin[i]);
-                    intervals[iterator[i]].setEndMax(globalFilter.endMax[i]);
+                interval.setStartMin(globalFilter.startMin[i]);
+                if (!isOptional[i]) {
+                    interval.setEndMax(globalFilter.endMax[i]);
                 }
             }
         }
@@ -241,14 +237,9 @@ class NoOverlapGlobal extends AbstractCPConstraint {
             // update endMax variables
             for (int i = 0; i < n; i++) {
                 CPIntervalVar interval = intervals[iterator[i]];
-                if (isOptional[i]) {
-                    if (-startMin[i] < interval.startMin()) {
-                        interval.setAbsent();
-                        activities.remove(iterator[i]);
-                    }
-                } else {
-                    intervals[iterator[i]].setEndMax(-globalFilter.startMin[i]);
-                    intervals[iterator[i]].setStartMin(-globalFilter.endMax[i]);
+                interval.setEndMax(-globalFilter.startMin[i]);
+                if (!isOptional[i]) {
+                    interval.setStartMin(-globalFilter.endMax[i]);
                 }
             }
         }
